@@ -70,7 +70,7 @@ ui <- fluidPage(#theme=shinytheme("sandstone"),
                                               tmapOutput('map2'))))),
                         column(3, style='padding-left:50px;',
                                fluidRow(column(12), div(style = "height:10px")),
-                               fluidRow(column(12), h3('Choose a country', align = 'center')),
+                               fluidRow(column(12), h3('Choose a country', align = 'left')),
                                fluidRow(
                                  column(12,
                                         selectInput("var", label = h3(""), 
@@ -140,14 +140,14 @@ server <- function(input, output) {
           left_join(mang, by = 'Country') %>% 
           mutate(area_historical = Forest_ha + Deforested_ha,
                  prot.total_ha = prot_ha_yr*(2030-2023)) %>% 
-          mutate(prot.prop = (prot.total_ha/area_historical)*100)
+          mutate(prot.prop = (prot.total_ha/area_historical))
         
         mang.R <- rest.rates.m %>% 
           rename(Country = country) %>% 
           left_join(mang, by = 'Country') %>% 
           mutate(area_historical = Forest_ha + Deforested_ha,
                  rest.total_ha = rest_ha_yr*(2050-2023)) %>% 
-          mutate(rest.prop = (rest.total_ha/area_historical)*100)
+          mutate(rest.prop = (rest.total_ha/area_historical))
         
         mang2 <- select(mang.P, Country, prot.prop) %>% 
           left_join(select(mang.R, Country, rest.prop), by = 'Country')
@@ -171,15 +171,15 @@ server <- function(input, output) {
         }else if(input$sliderPr == 0 & input$sliderRr > 0){
           mang2$cut <- class2$cut
         }else{
-          mang2$cut <- c(class1$cut + 3 * (class2$cut - 1))
+          mang2$cut <- factor(c(class1$cut + 3 * (class2$cut - 1)))
         }
         
         world.mang <- countries %>% 
             inner_join(mang2, by = 'Country') %>% 
-          mutate(prot.prop = round(prot.prop, 0),
-                 rest.prop = round(rest.prop, 0)) %>% 
-          rename(`Percentage protected` = prot.prop,
-                 `Percentage restored` = rest.prop)
+          mutate(prot.prop = round(prot.prop, 4),
+                 rest.prop = round(rest.prop, 4)) %>% 
+          rename(`Proportion protected` = prot.prop,
+                 `Proportion restored` = rest.prop)
         
         tmap_mode('view')
         
@@ -188,23 +188,27 @@ server <- function(input, output) {
         }else if(input$sliderPr == 0 & input$sliderRr > 0){
           pal = stevens.greenblue(n=9)[c(1,4,7)]
         }else{
-          pal = stevens.greenblue(n=9)
+          index <- as.numeric(sort(as.character(unique(world.mang$cut))))
+          pal <- stevens.greenblue(n=9)[index]
         }
         
         if(input$var == 'Global'){
           tm_shape(world.mang[,-c(1,3,4,5)]) +
             tm_polygons('cut', legend.show = F,
-                        palette = pal,
+                        palette = pal, alpha =0.8,
                         popup.vars=c(
-                          "Percentage protected",
-                          "Percentage restored"))
+                          "Proportion protected",
+                          "Proportion restored")) +
+            tm_basemap(leaflet::providers$CartoDB.DarkMatter)
+
         }else{
           tm_shape(filter(world.mang[,-c(1,3,4,5)], Country == input$var)) +
             tm_polygons('cut', legend.show = F,
-                        palette = pal,
+                        palette = pal,alpha =0.2,
                         popup.vars=c(
-                          "Percentage protected",
-                          "Percentage restored"))
+                          "Proportion protected",
+                          "Proportion restored")) +
+            tm_basemap(leaflet::providers$CartoDB.DarkMatter)
           }
     })
     
@@ -219,18 +223,19 @@ server <- function(input, output) {
           mutate(max_area = ifelse(area_start_X50. > max_area, area_start_X50., max_area)) %>% 
           group_by(SOVEREIGN1) %>%
           summarise(rest_ha_yr = sum(rest_ha_yr), max_area = sum(max_area)) %>%
-          mutate(rest.prop = (rest_ha_yr*(2050-2023)/max_area)*100)
+          mutate(rest.prop = (rest_ha_yr*(2050-2023)/max_area))
         
         sea.P <- prot.rates.s %>% 
           rename(study_site = site) %>% 
-          left_join(select(data.frame(seag.sf), study_site, SOVEREIGN1, area_start_X50., max_area)) %>% 
-          mutate(max_area = ifelse(area_start_X50. > max_area, area_start_X50., max_area)) %>% 
+          full_join(select(data.frame(seag.sf), study_site, SOVEREIGN1, area_start_X50., max_area)) %>% 
+          mutate(max_area = ifelse(area_start_X50. > max_area, area_start_X50., max_area),
+                 prot_ha_yr = ifelse(is.na(prot_ha_yr), 0, prot_ha_yr)) %>% 
           group_by(SOVEREIGN1) %>%
           summarise(prot_ha_yr = sum(prot_ha_yr), max_area = sum(max_area)) %>%
-          mutate(prot.prop = (prot_ha_yr/max_area)*100)
+          mutate(prot.prop = (prot_ha_yr/max_area))
         
         sea2 <- sea.R %>% 
-          full_join(select(sea.P, SOVEREIGN1, prot.prop), by = 'SOVEREIGN1') %>% 
+          full_join(select(sea.P, SOVEREIGN1, prot_ha_yr, prot.prop), by = 'SOVEREIGN1') %>% 
           mutate(prot.prop = ifelse(is.na(prot.prop), 0, prot.prop)) %>% 
           rename(Country = SOVEREIGN1)
         
@@ -253,22 +258,23 @@ server <- function(input, output) {
         }else if(input$sliderPr == 0 & input$sliderRr > 0){
           sea2$cut <- class2$cut
         }else{
-          sea2$cut <- c(class1$cut + 3 * (class2$cut - 1))
+          sea2$cut <- factor(c(class1$cut + 3 * (class2$cut - 1)))
         }
         
         world.seag <- countries %>% 
             inner_join(sea2, by = 'Country') %>% 
-          mutate(prot.prop = round(prot.prop, 0),
-                 rest.prop = round(rest.prop, 0)) %>% 
-        rename(`Percentage protected` = prot.prop,
-               `Percentage restored` = rest.prop)
+          mutate(prot.prop = round(prot.prop, 4),
+                 rest.prop = round(rest.prop, 4)) %>% 
+          rename(`Proportion protected` = prot.prop,
+                 `Proportion restored` = rest.prop)
         
         if(input$sliderRr == 0 & input$sliderPr > 0){
-          pal = stevens.greenblue(n=9)[c(1:3)]
+          pal <- stevens.greenblue(n=9)[c(1:3)]
         }else if(input$sliderPr == 0 & input$sliderRr > 0){
-          pal = stevens.greenblue(n=9)[c(1,4,7)]
+          pal <- stevens.greenblue(n=9)[c(1,4,7)]
         }else{
-          pal = stevens.greenblue(n=9)
+          index <- as.numeric(sort(as.character(unique(world.seag$cut))))
+          pal <- stevens.greenblue(n=9)[index]
         }
         
         tmap_mode('view')
@@ -276,17 +282,19 @@ server <- function(input, output) {
         if(input$var2 == 'Global'){
         tm_shape(world.seag[,-c(1,3,4,5)]) +
           tm_polygons('cut', legend.show = F,
-                      palette = pal,
+                      palette = pal,alpha =0.8,
                       popup.vars=c(
-                        "Percentage protected",
-                        "Percentage restored"))
+                        "Proportion protected",
+                        "Proportion restored")) +
+            tm_basemap(leaflet::providers$CartoDB.DarkMatter)
         }else{
           tm_shape(filter(world.seag[,-c(1,3,4,5)], Country == input$var2)) +
-            tm_polygons('cut', legend.show = F,
-                        palette = pal,
+            tm_polygons('cut', legend.show = F, 
+                        palette = pal, alpha =0.2,
                         popup.vars=c(
-                          "Percentage protected",
-                          "Percentage restored"))
+                          "Proportion protected",
+                          "Proportion restored")) +
+            tm_basemap(leaflet::providers$CartoDB.DarkMatter)
         }
         
     })
@@ -309,23 +317,23 @@ server <- function(input, output) {
             geom_ribbon(data = mang.global2 %>% 
                             select(year, state, prop) %>% # prop Unprotected Forested
                             pivot_wider(names_from = state, values_from = prop), 
-                        aes(x = as.integer(year), ymin=UD+PD+PF+UF, ymax=UF+PF+UD+PD+Unrest, fill="brown3")) +
+                        aes(x = as.integer(year), ymin=UD+PD+PF+UF, ymax=UF+PF+UD+PD+Unrest, fill="brown3"), alpha =0.75) +
             geom_ribbon(data = mang.global2 %>% 
                             select(year, state, prop) %>% # prop Protected forest
                             pivot_wider(names_from = state, values_from = prop), 
-                        aes(x = as.integer(year), ymin=PD+PF+UF, ymax=UD+PD+PF+UF, fill="cadetblue2")) +
+                        aes(x = as.integer(year), ymin=PD+PF+UF, ymax=UD+PD+PF+UF, fill="cadetblue2"), alpha =0.75) +
             geom_ribbon(data = mang.global2 %>%
                             select(year, state, prop) %>% # prop protected deforested
                             pivot_wider(names_from = state, values_from = prop), 
-                        aes(x = as.integer(year), ymin=PF+UF,ymax=PD+PF+UF, fill="darkcyan")) +
+                        aes(x = as.integer(year), ymin=PF+UF,ymax=PD+PF+UF, fill="darkcyan"), alpha =0.75) +
             geom_ribbon(data = mang.global2 %>%
                             select(year, state, prop) %>% # prop unprodected deforested
                             pivot_wider(names_from = state, values_from = prop), 
-                        aes(x = as.integer(year), ymin=UF,ymax=PF+UF, fill="lightgoldenrod2")) +
+                        aes(x = as.integer(year), ymin=UF,ymax=PF+UF, fill="lightgoldenrod2"), alpha =0.75) +
             geom_ribbon(data = mang.global2 %>%
                             select(year, state, prop) %>% # prop unrestorable
                             pivot_wider(names_from = state, values_from = prop), 
-                        aes(x = as.integer(year), ymin=0,ymax=UF, fill="seagreen")) +
+                        aes(x = as.integer(year), ymin=0,ymax=UF, fill="seagreen"), alpha =0.75) +
          scale_fill_identity(guide="legend", labels = c('Unrestorable', 'Unprotected deforested', 'Protected deforested',
                                  'Protected forest','Unprotected forest'), name = '') +
             ylab('Proportion') +
@@ -355,23 +363,23 @@ server <- function(input, output) {
                 geom_ribbon(data = mang.global2 %>% 
                                 select(year, state, prop) %>% # prop Unprotected Forested
                                 pivot_wider(names_from = state, values_from = prop), 
-                            aes(x = as.integer(year), ymin=UD+PD+PF+UF, ymax=UF+PF+UD+PD+Unrest, fill="brown3")) +
+                            aes(x = as.integer(year), ymin=UD+PD+PF+UF, ymax=UF+PF+UD+PD+Unrest, fill="brown3"), alpha =0.75) +
                 geom_ribbon(data = mang.global2 %>% 
                                 select(year, state, prop) %>% # prop Protected forest
                                 pivot_wider(names_from = state, values_from = prop), 
-                            aes(x = as.integer(year), ymin=PD+PF+UF, ymax=UD+PD+PF+UF, fill="cadetblue2")) +
+                            aes(x = as.integer(year), ymin=PD+PF+UF, ymax=UD+PD+PF+UF, fill="cadetblue2"), alpha =0.75) +
                 geom_ribbon(data = mang.global2 %>%
                                 select(year, state, prop) %>% # prop protected deforested
                                 pivot_wider(names_from = state, values_from = prop), 
-                            aes(x = as.integer(year), ymin=PF+UF,ymax=PD+PF+UF, fill="darkcyan")) +
+                            aes(x = as.integer(year), ymin=PF+UF,ymax=PD+PF+UF, fill="darkcyan"), alpha =0.75) +
                 geom_ribbon(data = mang.global2 %>%
                                 select(year, state, prop) %>% # prop unprodected deforested
                                 pivot_wider(names_from = state, values_from = prop), 
-                            aes(x = as.integer(year), ymin=UF,ymax=PF+UF, fill="lightgoldenrod2")) +
+                            aes(x = as.integer(year), ymin=UF,ymax=PF+UF, fill="lightgoldenrod2"), alpha =0.75) +
                 geom_ribbon(data = mang.global2 %>%
                                 select(year, state, prop) %>% # prop unrestorable
                                 pivot_wider(names_from = state, values_from = prop), 
-                            aes(x = as.integer(year), ymin=0,ymax=UF, fill="seagreen")) +
+                            aes(x = as.integer(year), ymin=0,ymax=UF, fill="seagreen"), alpha =0.75) +
               scale_fill_identity(guide="legend", labels = c('Unrestorable', 'Unprotected deforested', 'Protected deforested',
                                                              'Protected forest','Unprotected forest'), name = '') +
                 ylab('Proportion') +
@@ -404,11 +412,11 @@ server <- function(input, output) {
             geom_ribbon(data = seag.global2 %>%
                             select(year, state, prop) %>% # prop unprodected deforested
                             pivot_wider(names_from = state, values_from = prop), 
-                        aes(x = as.integer(year), ymin=M,ymax=LM+M, fill="cadetblue2")) +
+                        aes(x = as.integer(year), ymin=M,ymax=LM+M, fill="cadetblue2"), alpha =0.75) +
             geom_ribbon(data = seag.global2 %>%
                             select(year, state, prop) %>% # prop unrestorable
                             pivot_wider(names_from = state, values_from = prop), 
-                        aes(x = as.integer(year), ymin=0,ymax=M, fill="seagreen")) +
+                        aes(x = as.integer(year), ymin=0,ymax=M, fill="seagreen"), alpha =0.75) +
             scale_fill_identity(guide = 'legend',labels = c('Lost Meadow', 
                                                             'Meadow'),
                                 name = '') +
@@ -442,11 +450,11 @@ server <- function(input, output) {
                 geom_ribbon(data = seag.global2 %>%
                                 select(year, state, prop) %>% # prop unprodected deforested
                                 pivot_wider(names_from = state, values_from = prop), 
-                            aes(x = as.integer(year), ymin=M,ymax=LM+M, fill="cadetblue2")) +
+                            aes(x = as.integer(year), ymin=M,ymax=LM+M, fill="cadetblue2"), alpha =0.75) +
                 geom_ribbon(data = seag.global2 %>%
                                 select(year, state, prop) %>% # prop unrestorable
                                 pivot_wider(names_from = state, values_from = prop), 
-                            aes(x = as.integer(year), ymin=0,ymax=M, fill="seagreen")) +
+                            aes(x = as.integer(year), ymin=0,ymax=M, fill="seagreen"), alpha =0.75) +
                 scale_fill_identity(guide = 'legend',labels = c('Lost Meadow', 
                                                                 'Meadow'), name = '') +
                 ylab('Proportion') +

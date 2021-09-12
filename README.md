@@ -1,6 +1,6 @@
 ## Coastal wetland protection and restoration to acheive conservation targets
 
-Tour the web app [here](https://wetlands.app/wetland-futures/)
+Tour the web app [here](https://cbuelow.shinyapps.io/Wetland-futures/)
 
 Please cite Buelow et al. (*in prep*) *'Ambitious conservation targets lead to coastal wetland recovery'* if you use output from this app.
 

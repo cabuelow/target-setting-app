@@ -1,4 +1,4 @@
-## Coastal wetland protection and restoration to acheive conservation targets
+## Coastal wetland protection and restoration to achieve conservation targets
 
 Tour the web app [here](https://cbuelow.shinyapps.io/Wetland-futures/)
 

@@ -6,7 +6,7 @@ Please cite Buelow et al. (*in prep*) *'Ambitious targets lead to coastal ecosys
 
 Find additional data and code for all analyses [here](https://github.com/cabuelow/ambitious-targets)
 
-[About](#about) | [License](LICENSE)
+[About](#about) | [Wishlist](#wishlist) [License](LICENSE)
 
 ### About
 
@@ -15,3 +15,7 @@ Use the [app](https://wetlands.app/wetland-futures/) to explore trajectories of 
 <p align="center">
   <img width="1000" height="480" src="https://github.com/cabuelow/wetland-futures-app/blob/main/img.png">
 </p>
+
+### Wishlist
+
+[] For seagrass, have a toggle button to switch between protection sensitivity scenarios (i.e., sites with highest rates of loss get protected, or completely random assignment of which site gets protected)

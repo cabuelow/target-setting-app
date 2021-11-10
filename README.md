@@ -1,6 +1,6 @@
-## Setting targets for coastal ecosystem recovery
+## Targeting coastal ecosystem recovery
 
-Tour the web app [here](https://cbuelow.shinyapps.io/Wetland-futures/)
+Tour the web app [here](https://cbuelow.shinyapps.io/target-setting/)
 
 Please cite Buelow et al. (*in prep*) *'Ambitious targets for coastal ecosystem conservation'* if you use output from this app.
 
@@ -13,7 +13,7 @@ Find additional data and code for all analyses [here](https://github.com/cabuelo
 Use the [app](https://wetlands.app/wetland-futures/) to explore trajectories of mangrove and seagrass extent change under different protection and restoration scenarios.
 
 <p align="center">
-  <img width="1000" height="480" src="https://github.com/cabuelow/wetland-futures-app/blob/main/img.png">
+  <img width="1000" height="480" src="https://github.com/cabuelow/target-setting-app/blob/main/map.png">
 </p>
 
 ### Wishlist

@@ -2,7 +2,7 @@
 
 Tour the web app [here](https://cbuelow.shinyapps.io/target-setting/)
 
-Please cite Buelow et al. (*in prep*) *'Ambitious targets for coastal ecosystem recovery'* if you use output from this app.
+Please cite Buelow et al. (*submitted*) *'Ambitious targets for coastal ecosystem recovery'* in **Current Biology** if you use output from this app.
 
 Find additional data and code for all analyses [here](https://github.com/cabuelow/ambitious-targets)
 

@@ -1,8 +1,8 @@
-## Targeting coastal ecosystem recovery
+## Setting targets for coastal ecosystem recovery
 
 Tour the web app [here](https://cbuelow.shinyapps.io/Wetland-futures/)
 
-Please cite Buelow et al. (*in prep*) *'Ambitious targets lead to coastal ecosystem recovery'* if you use output from this app.
+Please cite Buelow et al. (*in prep*) *'Ambitious targets for coastal ecosystem conservation'* if you use output from this app.
 
 Find additional data and code for all analyses [here](https://github.com/cabuelow/ambitious-targets)
 

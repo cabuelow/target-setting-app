@@ -1,8 +1,8 @@
-## Target-setting for coastal ecosystem recovery
+## Target-setting for mangrove and seagrass recovery
 
 Tour the web app [here](https://cbuelow.shinyapps.io/target-setting/)
 
-Please cite Buelow et al. (*under review*) *'Ambitious targets for coastal ecosystem recovery'* in **Current Biology** if you use output from this app.
+Please cite Buelow et al. (*under review*) *'Ambitious targets for mangrove and seagrass recovery'* in **Current Biology** if you use output from this app.
 
 Find additional data and code for all analyses [here](https://github.com/cabuelow/ambitious-targets)
 
